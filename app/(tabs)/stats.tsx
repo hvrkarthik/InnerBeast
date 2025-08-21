@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Card } from '@/components/ui/Card';
-import { Typography } from '@/components/ui/Typography';
-import { Button } from '@/components/ui/Button';
-import { ChartBar as BarChart3, TrendingUp, Target, BookOpen, MapPin, Code, Plus, Trash2 } from 'lucide-react-native';
-import { Storage, STORAGE_KEYS } from '@/utils/storage';
-import { LifeStat, Book, Place, Project } from '@/types';
-import { AddGoalModal } from '@/components/modals/AddGoalModal';
 import { AddBookModal } from '@/components/modals/AddBookModal';
+import { AddGoalModal } from '@/components/modals/AddGoalModal';
 import { AddPlaceModal } from '@/components/modals/AddPlaceModal';
 import { AddProjectModal } from '@/components/modals/AddProjectModal';
+import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
+import { Typography } from '@/components/ui/Typography';
+import { Book, LifeStat, Place, Project } from '@/types';
+import { Storage, STORAGE_KEYS } from '@/utils/storage';
+import { LinearGradient } from 'expo-linear-gradient';
+import { BarChart3, BookOpen, Code, MapPin, Target, Trash2 } from 'lucide-react-native';
+import React, { useEffect, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function Stats() {
   const [lifeStats, setLifeStats] = useState<LifeStat[]>([]);
