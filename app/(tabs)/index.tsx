@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, Image, RefreshControl } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Card } from '@/components/ui/Card';
@@ -11,7 +11,7 @@ import { StreakCalendar } from '@/components/features/StreakCalendar';
 import { QuickActions } from '@/components/features/QuickActions';
 import { AchievementBadge } from '@/components/features/AchievementBadge';
 import { OnboardingTour } from '@/components/features/OnboardingTour';
-import { Brain, Target, TrendingUp, Calendar, Flame, Trophy, Star, CheckCircle, AlertCircle } from 'lucide-react-native';
+import { Brain, TrendingUp, Flame, Trophy, CheckCircle, AlertCircle } from 'lucide-react-native';
 import { Storage, STORAGE_KEYS } from '@/utils/storage';
 import { DailyCheckIn, LifeStat } from '@/types';
 import { formatDisplayDate, getDaysInStreak } from '@/utils/dateHelpers';
@@ -34,9 +34,14 @@ export default function Dashboard() {
     loadDashboardData();
   }, []);
 
+  type UserPreferences = {
+    hasSeenOnboarding?: boolean;
+    // add other preference properties here if needed
+  };
+
   const checkOnboardingStatus = async () => {
     try {
-      const preferences = await Storage.get(STORAGE_KEYS.USER_PREFERENCES);
+      const preferences = await Storage.get<UserPreferences>(STORAGE_KEYS.USER_PREFERENCES);
       if (!preferences?.hasSeenOnboarding) {
         setShowOnboarding(true);
       }
@@ -56,15 +61,15 @@ export default function Dashboard() {
       
       const checkInsData = Array.isArray(checkInsResult) ? checkInsResult : [];
       const today = new Date().toISOString().split('T')[0];
-      const todayCheckIn = checkInsData.find(c => c && c.date === today) || null;
+      const todayCheckIn = checkInsData.find(c => c?.date === today) || null;
       
       const stats = Array.isArray(statsResult) ? statsResult : [];
-      const streak = getDaysInStreak(checkInsData.map(c => c?.date).filter(Boolean));
+      const streak = getDaysInStreak(checkInsData.map(c => c?.date).filter((date): date is string => Boolean(date)));
       
       const userAchievements = calculateAchievements(checkInsData, stats);
       
       setTodayCheckIn(todayCheckIn);
-      setLifeStats(stats.slice(0, 3)); // Show top 3 stats
+      setLifeStats(stats.slice(0, 3));
       setCheckIns(checkInsData);
       setFocusStreak(streak);
       setAchievements(userAchievements);
@@ -194,10 +199,8 @@ export default function Dashboard() {
             />
           }
         >
-          {/* Header */}
           <View style={styles.header}>
             <View style={styles.headerContent}>
-           
               <View style={styles.headerText}>
                 <Typography variant="h1" color="#F9FAFB">
                   InnerBeast
@@ -212,9 +215,8 @@ export default function Dashboard() {
             </TouchableOpacity>
           </View>
 
-          {/* Error Message */}
           {error && (
-            <Card style={[styles.messageCard, styles.errorCard]}>
+            <Card style={{ ...styles.messageCard, ...styles.errorCard }}>
               <View style={styles.messageContent}>
                 <AlertCircle size={20} color="#EF4444" />
                 <Typography variant="body" color="#EF4444" style={styles.messageText}>
@@ -229,14 +231,12 @@ export default function Dashboard() {
             </Card>
           )}
 
-          {/* Motivational Quote */}
           <Card style={styles.quoteCard}>
             <Typography variant="h3" color="#6366F1" style={styles.quoteText}>
               "{getMotivationalQuote()}"
             </Typography>
           </Card>
 
-          {/* Stats Overview */}
           <View style={styles.statsOverview}>
             <Card style={styles.streakCard}>
               <View style={styles.streakContent}>
@@ -265,7 +265,6 @@ export default function Dashboard() {
             </Card>
           </View>
 
-          {/* Quick Stats */}
           <View style={styles.quickStats}>
             <Card style={styles.quickStatCard}>
               <Typography variant="h3" color="#10B981">
@@ -293,7 +292,6 @@ export default function Dashboard() {
             </Card>
           </View>
 
-          {/* Today's Check-in Status */}
           <Card style={styles.checkInCard}>
             <View style={styles.checkInHeader}>
               <Brain size={24} color="#6366F1" />
@@ -333,7 +331,6 @@ export default function Dashboard() {
             )}
           </Card>
 
-          {/* Life Stats Overview */}
           {Array.isArray(lifeStats) && lifeStats.length > 0 && (
             <Card style={styles.statsCard}>
               <View style={styles.statsHeader}>
@@ -383,7 +380,6 @@ export default function Dashboard() {
             </Card>
           )}
 
-          {/* Achievements */}
           {unlockedAchievements.length > 0 && (
             <View style={styles.achievementsSection}>
               <Typography variant="h3" color="#F9FAFB" style={styles.sectionTitle}>
@@ -399,18 +395,15 @@ export default function Dashboard() {
             </View>
           )}
 
-          {/* Streak Calendar */}
           <View style={styles.calendarSection}>
-            <StreakCalendar checkinDates={Array.isArray(checkIns) ? checkIns.map(c => c?.date).filter(Boolean) : []} />
+            <StreakCalendar checkinDates={Array.isArray(checkIns) ? checkIns.map(c => c?.date).filter((date): date is string => Boolean(date)) : []} />
           </View>
 
-          {/* Quick Actions */}
           <QuickActions />
 
           <View style={styles.bottomPadding} />
         </ScrollView>
 
-        {/* Onboarding Tour */}
         <OnboardingTour
           visible={showOnboarding}
           onComplete={handleCompleteOnboarding}
@@ -452,12 +445,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-  },
-  profileImage: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 12,
   },
   headerText: {
     flex: 1,

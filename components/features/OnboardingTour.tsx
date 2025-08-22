@@ -1,13 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, StyleSheet, Modal, TouchableOpacity, Dimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Card } from '@/components/ui/Card';
 import { Typography } from '@/components/ui/Typography';
 import { Button } from '@/components/ui/Button';
-import { X, ArrowRight, ArrowLeft, Brain, Target, BookOpen, ChartBar as BarChart3, Shield } from 'lucide-react-native';
+import { X, ArrowRight, ArrowLeft, Brain, Target, BookOpen, BarChart3, Shield } from 'lucide-react-native';
 import { Storage, STORAGE_KEYS } from '@/utils/storage';
 
-const { width, height } = Dimensions.get('window');
+// const { width, height } = Dimensions.get('window');
 
 interface OnboardingStep {
   id: string;
@@ -73,7 +73,7 @@ export function OnboardingTour({ visible, onComplete }: OnboardingTourProps) {
 
   const handleNext = () => {
     if (isAnimating) return;
-    
+
     if (currentStep < ONBOARDING_STEPS.length - 1) {
       setIsAnimating(true);
       setTimeout(() => {
@@ -87,7 +87,7 @@ export function OnboardingTour({ visible, onComplete }: OnboardingTourProps) {
 
   const handlePrevious = () => {
     if (isAnimating || currentStep === 0) return;
-    
+
     setIsAnimating(true);
     setTimeout(() => {
       setCurrentStep(currentStep - 1);
@@ -98,10 +98,13 @@ export function OnboardingTour({ visible, onComplete }: OnboardingTourProps) {
   const handleComplete = async () => {
     try {
       await Storage.set(STORAGE_KEYS.USER_PREFERENCES, { hasSeenOnboarding: true });
-      onComplete();
+      onComplete(); // Call onComplete to close modal and navigate to app
     } catch (error) {
       console.error('Error saving onboarding completion:', error);
+      // Proceed with onComplete even if storage fails to avoid blocking the user
       onComplete();
+    } finally {
+      setIsAnimating(false); // Ensure animation flag is reset
     }
   };
 
@@ -111,6 +114,9 @@ export function OnboardingTour({ visible, onComplete }: OnboardingTourProps) {
 
   const step = ONBOARDING_STEPS[currentStep];
   const progress = ((currentStep + 1) / ONBOARDING_STEPS.length) * 100;
+
+  // Log current step for debugging
+  console.log(`Current step: ${currentStep}, Visible: ${visible}`);
 
   return (
     <Modal
@@ -140,7 +146,7 @@ export function OnboardingTour({ visible, onComplete }: OnboardingTourProps) {
 
         {/* Content */}
         <View style={styles.content}>
-          <Card style={[styles.stepCard, { borderColor: `${step.color}30` }]}>
+          <Card style={{ ...styles.stepCard, borderColor: `${step.color}30` }}>
             <View style={[styles.iconContainer, { backgroundColor: `${step.color}20` }]}>
               {step.icon}
             </View>
@@ -175,10 +181,12 @@ export function OnboardingTour({ visible, onComplete }: OnboardingTourProps) {
                   </Typography>
                 </View>
                 <View style={styles.featureItem}>
-                  <Typography variant="body" color="#10B981">✓</Typography>
-                  <Typography variant="caption" color="#9CA3AF">
-                    Focus tools & distraction resistance
-                  </Typography>
+                  <View style={styles.featureItem}>
+                    <Typography variant="body" color="#10B981">✓</Typography>
+                    <Typography variant="caption" color="#9CA3AF">
+                      Focus tools & distraction resistance
+                    </Typography>
+                  </View>
                 </View>
               </View>
             )}
@@ -233,7 +241,8 @@ export function OnboardingTour({ visible, onComplete }: OnboardingTourProps) {
               title="Start Your Journey"
               onPress={handleComplete}
               size="lg"
-              style={[styles.ctaButton, { backgroundColor: step.color }]}
+              style={{ ...styles.ctaButton, backgroundColor: step.color }}
+              disabled={isAnimating}
             />
             <Typography variant="caption" color="#9CA3AF" style={styles.ctaSubtext}>
               Ready to unleash your inner beast? 🚀
